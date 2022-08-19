@@ -11,8 +11,8 @@ public class AllExceptionHandler {
     //进程异常处理，处理Exception.class的异常
     @ExceptionHandler(Exception.class)
     @ResponseBody//返回json
-    public Result doException(Exception ex){
+    public Result doException(Exception ex) {
         ex.printStackTrace();
-        return Result.fail(-999,"系统异常");
+        return Result.fail(-999, "系统异常");
     }
 }

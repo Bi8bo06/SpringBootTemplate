@@ -19,15 +19,15 @@ public class TagServiceImpl implements TagService {
     @Autowired
     private TagMapper tagMapper;
 
-    public TagVo copy(Tag tag){
+    public TagVo copy(Tag tag) {
         TagVo tagVo = new TagVo();
-        BeanUtils.copyProperties(tag,tagVo);
+        BeanUtils.copyProperties(tag, tagVo);
         return tagVo;
     }
 
-    public List<TagVo> copyList(List<Tag> tagList){
+    public List<TagVo> copyList(List<Tag> tagList) {
         List<TagVo> tagVoList = new ArrayList<>();
-        for(Tag tag: tagList){
+        for (Tag tag : tagList) {
             tagVoList.add(copy(tag));
         }
         return tagVoList;
@@ -47,7 +47,7 @@ public class TagServiceImpl implements TagService {
          * 2、查询 根据tag_id分组计数，从大到小排列，取前limit个
          */
         List<Long> tagIds = tagMapper.findHotsTagIds(limit);
-        if(CollectionUtils.isEmpty(tagIds)){
+        if (CollectionUtils.isEmpty(tagIds)) {
             return Result.success(Collections.emptyList());
         }
         //

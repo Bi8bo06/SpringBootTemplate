@@ -42,7 +42,7 @@ public class SysUser {
      */
     private String nickname;
     /**
-     *密码
+     * 密码
      */
     private String password;
     /**

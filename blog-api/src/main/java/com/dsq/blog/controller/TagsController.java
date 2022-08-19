@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class TagsController {
     @Autowired
     private TagService tagService;
+
     @GetMapping("hot")
-    public Result hot(){
+    public Result hot() {
         int limit = 2;
         return tagService.hots(limit);
     }

@@ -14,7 +14,7 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public SysUser findUserById(Long id) {
         SysUser sysUser = sysUserMapper.selectById(id);
-        if(sysUser == null){
+        if (sysUser == null) {
             sysUser = new SysUser();
             sysUser.setNickname("admin");
         }
