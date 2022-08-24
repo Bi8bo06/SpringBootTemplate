@@ -1,9 +1,13 @@
 package com.dsq.blog.dao.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
 public class SysUser {
+    //    @TableId(type = IdType.ASSIGN_ID)  //默认id类型
+    //用户多了之后，需要考虑分表操作，id需要用分布式id
     private Long id;
     /**
      * 账号

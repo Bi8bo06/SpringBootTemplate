@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -63,5 +64,24 @@ public class SysUserServiceImpl implements SysUserService {
         loginUserVo.setAvatar(sysUser.getAvatar());
         loginUserVo.setAccount(sysUser.getAccount());
         return Result.success(loginUserVo);
+    }
+
+    @Override
+    public SysUser findUserByAccount(String account) {
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getAccount, account);
+        queryWrapper.last("limit 1");
+        this.sysUserMapper.selectOne(queryWrapper);
+        return null;
+    }
+
+    @Override
+    public void save(SysUser sysUser) {
+        /**
+         * 保存用户 id会自动生成
+         * 默认生成的id是分布式id 雪花算法
+         * mybatis-plus
+         */
+        this.sysUserMapper.insert(sysUser);
     }
 }
