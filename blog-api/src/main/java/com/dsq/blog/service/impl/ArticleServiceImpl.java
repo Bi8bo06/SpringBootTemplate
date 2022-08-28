@@ -3,11 +3,12 @@ package com.dsq.blog.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dsq.blog.dao.dos.Archives;
+import com.dsq.blog.dao.mapper.ArticleBodyMapper;
 import com.dsq.blog.dao.mapper.ArticleMapper;
 import com.dsq.blog.dao.pojo.Article;
-import com.dsq.blog.service.ArticleService;
-import com.dsq.blog.service.SysUserService;
-import com.dsq.blog.service.TagService;
+import com.dsq.blog.dao.pojo.ArticleBody;
+import com.dsq.blog.service.*;
+import com.dsq.blog.vo.ArticleBodyVo;
 import com.dsq.blog.vo.ArticleVo;
 import com.dsq.blog.vo.Result;
 import com.dsq.blog.vo.params.PageParams;
@@ -74,6 +75,24 @@ public class ArticleServiceImpl implements ArticleService {
         return Result.success(archivesList);
     }
 
+    @Autowired
+    private ThreadService threadService;
+
+    @Override
+    public Result findArticleById(Long articleId) {
+        /**
+         * 1、根据id查询文章信息
+         * 2、根据bodyId和categoryId 去关联查询
+         */
+        Article article = this.articleMapper.selectById(articleId);
+        ArticleVo articleVo = copy(article, true, true, true, true);
+        //查看完文章之后，本应该直接返回数据了，这时候做了一个更新操作，更新时加写锁，阻塞其他的读操作，性能就会比较低
+        //更新增加了此次接口的耗时 如果一旦更新出问题，不能影响 查看文章的操作
+        //线程池 可以把更新操作扔到线程池中去执行，和主线程就不相关了
+        threadService.updateArticleViewCount(articleMapper, article);
+        return Result.success(articleVo);
+    }
+
     /**
      * 数据处理补充
      *
@@ -85,12 +104,33 @@ public class ArticleServiceImpl implements ArticleService {
     private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor) {
         List<ArticleVo> articleVoList = new ArrayList<>();
         for (Article record : records) {
-            articleVoList.add(copy(record, isTag, isAuthor));
+            articleVoList.add(copy(record, isTag, isAuthor, false, false));
         }
         return articleVoList;
     }
 
-    private ArticleVo copy(Article article, boolean isTag, boolean isAuthor) {
+    /**
+     * 数据处理补充
+     *
+     * @param records
+     * @param isTag      是否需要标签
+     * @param isAuthor   是否需要作者
+     * @param isBody     是否内容
+     * @param isCategory 是否分类
+     * @return
+     */
+    private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
+        List<ArticleVo> articleVoList = new ArrayList<>();
+        for (Article record : records) {
+            articleVoList.add(copy(record, isTag, isAuthor, isBody, isCategory));
+        }
+        return articleVoList;
+    }
+
+    @Autowired
+    private CategoryService categoryService;
+
+    private ArticleVo copy(Article article, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
         ArticleVo articleVo = new ArticleVo();
         BeanUtils.copyProperties(article, articleVo);
         articleVo.setCreateDate(new DateTime(article.getCreateDate()).toString("yyyy-MM-dd HH:mm"));
@@ -101,6 +141,24 @@ public class ArticleServiceImpl implements ArticleService {
         if (isAuthor) {
             articleVo.setAuthor(sysUserService.findUserById(article.getAuthorId()).getNickname());
         }
+        if (isBody) {
+            Long bodyId = article.getBodyId();
+            articleVo.setBody(findArticBodyById(bodyId));
+        }
+        if (isCategory) {
+            long categoryId = article.getCategoryId();
+            articleVo.setCategorys(categoryService.findCategoryById(categoryId));
+        }
         return articleVo;
+    }
+
+    @Autowired
+    private ArticleBodyMapper articleBodyMapper;
+
+    private ArticleBodyVo findArticBodyById(Long bodyId) {
+        ArticleBody articleBody = articleBodyMapper.selectById(bodyId);
+        ArticleBodyVo articleBodyVo = new ArticleBodyVo();
+        articleBodyVo.setContent(articleBody.getContent());
+        return articleBodyVo;
     }
 }
