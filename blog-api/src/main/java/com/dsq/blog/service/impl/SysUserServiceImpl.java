@@ -8,7 +8,10 @@ import com.dsq.blog.service.SysUserService;
 import com.dsq.blog.vo.ErrorCode;
 import com.dsq.blog.vo.LoginUserVo;
 import com.dsq.blog.vo.Result;
+import com.dsq.blog.vo.UserVo;
+import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,20 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Resource
     private RedisTemplate<String, String> redisTemplate;
+
+    @Override
+    public UserVo findUserVoById(Long id) {
+        SysUser sysUser = sysUserMapper.selectById(id);
+        if (sysUser == null) {
+            sysUser = new SysUser();
+            sysUser.setId(1L);
+            sysUser.setAvatar("");
+            sysUser.setNickname("admin");
+        }
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(sysUser, userVo);
+        return userVo;
+    }
 
     @Override
     public SysUser findUserById(Long id) {

@@ -2,9 +2,12 @@ package com.dsq.blog.service;
 
 import com.dsq.blog.dao.pojo.SysUser;
 import com.dsq.blog.vo.Result;
+import com.dsq.blog.vo.UserVo;
 
 
 public interface SysUserService {
+    UserVo findUserVoById(Long id);
+
     SysUser findUserById(Long id);
 
     SysUser findUser(String account, String password);
