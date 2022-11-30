@@ -13,7 +13,7 @@ public class UsersController {
     private SysUserService sysUserService;
 
     @GetMapping("currentUser")
-    public Result currenUser(@RequestHeader("Authorization") String token){
+    public Result currenUser(@RequestHeader("Authorization") String token) {
         return sysUserService.findUserByToken(token);
     }
 }

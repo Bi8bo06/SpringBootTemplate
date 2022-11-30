@@ -1,7 +1,5 @@
 package com.dsq.blog.dao.pojo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data

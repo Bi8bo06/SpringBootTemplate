@@ -3,7 +3,6 @@ package com.dsq.blog.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dsq.blog.dao.mapper.ArticleMapper;
 import com.dsq.blog.dao.pojo.Article;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
