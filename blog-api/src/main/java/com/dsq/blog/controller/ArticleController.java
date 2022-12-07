@@ -2,6 +2,7 @@ package com.dsq.blog.controller;
 
 import com.dsq.blog.service.ArticleService;
 import com.dsq.blog.vo.Result;
+import com.dsq.blog.vo.params.ArticleParam;
 import com.dsq.blog.vo.params.PageParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +47,7 @@ public class ArticleController {
         return articleService.newArticle(limit);
     }
 
-    /** 
+    /**
      * 首页 文章归档
      *
      * @return
@@ -65,5 +66,12 @@ public class ArticleController {
     @PostMapping("detail/{id}")
     public Result findArticleById(@PathVariable("id") Long id) {
         return articleService.findArticleById(id);
+    }
+
+    //  @RequestBody主要用来接收前端传递给后端的json字符串中的数据的(请求体中的数据的)；
+    //  而最常用的使用请求体传参的无疑是POST请求了，所以使用@RequestBody接收数据时，一般都用POST方式进行提交。
+    @PostMapping("publish")
+    public Result publish(@RequestBody ArticleParam articleParam) {
+        return articleService.publish(articleParam);
     }
 }

@@ -5,20 +5,29 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dsq.blog.dao.dos.Archives;
 import com.dsq.blog.dao.mapper.ArticleBodyMapper;
 import com.dsq.blog.dao.mapper.ArticleMapper;
+import com.dsq.blog.dao.mapper.ArticleTagMapper;
 import com.dsq.blog.dao.pojo.Article;
 import com.dsq.blog.dao.pojo.ArticleBody;
+import com.dsq.blog.dao.pojo.ArticleTag;
+import com.dsq.blog.dao.pojo.SysUser;
 import com.dsq.blog.service.*;
+import com.dsq.blog.utils.UserThreadLocal;
 import com.dsq.blog.vo.ArticleBodyVo;
 import com.dsq.blog.vo.ArticleVo;
 import com.dsq.blog.vo.Result;
+import com.dsq.blog.vo.TagVo;
+import com.dsq.blog.vo.params.ArticleParam;
 import com.dsq.blog.vo.params.PageParams;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ArticleServiceImpl implements ArticleService {
@@ -28,6 +37,8 @@ public class ArticleServiceImpl implements ArticleService {
     private TagService tagService;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private ArticleTagMapper articleTagMapper;
 
     @Override
     public Result listArticle(PageParams pageParams) {
@@ -90,6 +101,66 @@ public class ArticleServiceImpl implements ArticleService {
         //更新增加了此次接口的耗时 如果一旦更新出问题，不能影响 查看文章的操作
         //线程池 可以把更新操作扔到线程池中去执行，和主线程就不相关了
         threadService.updateArticleViewCount(articleMapper, article);
+        return Result.success(articleVo);
+    }
+
+    @Override
+    @Transactional
+    public Result publish(ArticleParam articleParam) {
+        //注意想要拿到数据必须将接口加入拦截器
+        SysUser sysUser = UserThreadLocal.get();
+
+        /**
+         * 1. 发布文章 目的 构建Article对象
+         * 2. 作者id  当前的登录用户
+         * 3. 标签  要将标签加入到 关联列表当中
+         * 4. body 内容存储 article bodyId
+         */
+        Article article = new Article();
+        article.setAuthorId(sysUser.getId());
+        article.setCategoryId(articleParam.getCategory().getId());
+        article.setCreateDate(System.currentTimeMillis());
+        article.setCommentCounts(0);
+        article.setSummary(articleParam.getSummary());
+        article.setTitle(articleParam.getTitle());
+        article.setViewCounts(0);
+        article.setWeight(Article.Article_Common);
+        article.setBodyId(-1L);
+        //插入之后 会生成一个文章id（因为新建的文章没有文章id所以要insert一下
+        //官网解释："insart后主键会自动'set到实体的ID字段。所以你只需要"getid()就好
+//        利用主键自增，mp的insert操作后id值会回到参数对象中
+        //https://blog.csdn.net/HSJ0170/article/details/107982866
+        this.articleMapper.insert(article);
+
+        //tags
+        List<TagVo> tags = articleParam.getTags();
+        if (tags != null) {
+            for (TagVo tag : tags) {
+                ArticleTag articleTag = new ArticleTag();
+                articleTag.setArticleId(article.getId());
+                articleTag.setTagId(tag.getId());
+                this.articleTagMapper.insert(articleTag);
+            }
+        }
+        //body
+        ArticleBody articleBody = new ArticleBody();
+        articleBody.setContent(articleParam.getBody().getContent());
+        articleBody.setContentHtml(articleParam.getBody().getContentHtml());
+        articleBody.setArticleId(article.getId());
+        articleBodyMapper.insert(articleBody);
+        //插入完之后再给一个id
+        article.setBodyId(articleBody.getId());
+        //MybatisPlus中的save方法什么时候执行insert，什么时候执行update
+        // https://www.cxyzjd.com/article/Horse7/103868144
+        //只有当更改数据库时才插入或者更新，一般查询就可以了
+        articleMapper.updateById(article);
+
+//        Map<String,String> map = new HashMap<>();
+//        map.put("id",article.getId().toString());
+//        return Result.success(map);
+
+        ArticleVo articleVo = new ArticleVo();
+        articleVo.setId(article.getId());
         return Result.success(articleVo);
     }
 

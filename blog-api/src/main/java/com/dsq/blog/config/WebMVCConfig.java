@@ -22,9 +22,10 @@ public class WebMVCConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         //拦截test接口，后续实际 遇到需要拦截的接口时，在配置为真正的拦截接口
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/**")
+//                .addPathPatterns("/**")
                 .excludePathPatterns("/login")
                 .excludePathPatterns("/register")
-                .addPathPatterns("/comments/create/change");
+                .addPathPatterns("/comments/create/change")
+                .addPathPatterns("/articles/publish");
     }
 }
