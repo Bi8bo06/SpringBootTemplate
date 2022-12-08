@@ -47,11 +47,16 @@ public class ArticleServiceImpl implements ArticleService {
          */
         Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
         LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        if (pageParams.getCategoryId() != null) {
+            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
+        }
         //是否置顶、按时间排序
-        //order by create_date desc
+        //时间倒序进行排列相当于order by create_date desc
         queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
         Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
+        //分页查询用法 https://blog.csdn.net/weixin_41010294/article/details/105726879
         List<Article> records = articlePage.getRecords();
+        // 要返回我们定义的vo数据，就是对应的前端数据，不应该只返回现在的数据需要进一步进行处理
         List<ArticleVo> articleVoList = copyList(records, true, true);
         return Result.success(articleVoList);
     }
