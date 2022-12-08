@@ -50,6 +50,24 @@ public class ArticleServiceImpl implements ArticleService {
         if (pageParams.getCategoryId() != null) {
             queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
         }
+        List<Long> articleIdList = new ArrayList<>();
+        if (pageParams.getTagId() != null) {
+            //加入标签条件查询
+            //article表中并没有tag字段 一篇文章有多个标签
+            //articie_tog article_id 1：n tag_id
+            //我们需要利用一个全新的属于文章标签的queryWrapper将这篇文章的article_Tag查出来，保存到一个list当中。
+            // 然后再根据queryWrapper的in方法选择我们需要的标签即可。
+            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+            for (ArticleTag articleTag : articleTags) {
+                articleIdList.add(articleTag.getArticleId());
+            }
+            if (articleTags.size() > 0) {
+                // and id in(1,2,3)
+                queryWrapper.in(Article::getId, articleIdList);
+            }
+        }
         //是否置顶、按时间排序
         //时间倒序进行排列相当于order by create_date desc
         queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
