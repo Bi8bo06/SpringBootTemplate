@@ -1,5 +1,6 @@
 package com.dsq.blog.controller;
 
+import com.dsq.blog.common.aop.LogAnnotation;
 import com.dsq.blog.service.ArticleService;
 import com.dsq.blog.vo.Result;
 import com.dsq.blog.vo.params.ArticleParam;
@@ -21,6 +22,8 @@ public class ArticleController {
      * @return
      */
     @PostMapping
+    //加上此注解 代表要对此接口记录日志
+    @LogAnnotation(module = "文章", operator = "获取文章列表")
     public Result listArticle(@RequestBody PageParams pageParams) {
         return articleService.listArticle(pageParams);
     }
