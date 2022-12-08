@@ -51,14 +51,24 @@ public class TagServiceImpl implements TagService {
         if (CollectionUtils.isEmpty(tagIds)) {
             return Result.success(Collections.emptyList());
         }
-        //
+        //需求的是 tagId 和 tagName Tag对象
+        //select * from tag where id in(1,2,3,4)
         List<Tag> tagList = tagMapper.findTagsByTagIds(tagIds);
         return Result.success(tagList);
     }
 
     @Override
     public Result findAll() {
-        List<Tag> tags = this.tagMapper.selectList(new LambdaQueryWrapper<>());
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Tag::getId,Tag::getTagName);
+        List<Tag> tags = this.tagMapper.selectList(queryWrapper);
+        return Result.success(copyList(tags));
+    }
+
+    @Override
+    public Result findAllDetail() {
+        LambdaQueryWrapper<Tag> queryWrapper = new LambdaQueryWrapper<>();
+        List<Tag> tags = this.tagMapper.selectList(queryWrapper);
         return Result.success(copyList(tags));
     }
 }

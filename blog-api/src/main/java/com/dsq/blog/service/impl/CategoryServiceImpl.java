@@ -6,7 +6,6 @@ import com.dsq.blog.dao.pojo.Category;
 import com.dsq.blog.service.CategoryService;
 import com.dsq.blog.vo.CategoryVo;
 import com.dsq.blog.vo.Result;
-import kotlin.collections.ArrayDeque;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +28,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Result findAll() {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(Category::getId,Category::getCategoryName);
+        List<Category> categories = categoryMapper.selectList(queryWrapper);
+        //页面交互的对象
+        return Result.success(copyList(categories));
+    }
+
+    @Override
+    public Result findAllDetail() {
         List<Category> categories = categoryMapper.selectList(new LambdaQueryWrapper<>());
         //页面交互的对象
         return Result.success(copyList(categories));
