@@ -30,12 +30,11 @@ public class TagsController {
     }
 
     @GetMapping("detail/{id}")
-    public Result findADetailById(@PathVariable("id") Long id) {
+    public Result findDetailById(@PathVariable("id") Long id) {
         /**
          * 查询所有文章标签下所有的文章
          * @return
          */
         return tagService.findDetailById(id);
     }
-
 }

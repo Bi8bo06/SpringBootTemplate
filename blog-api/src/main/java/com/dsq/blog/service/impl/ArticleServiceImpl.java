@@ -1,6 +1,7 @@
 package com.dsq.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dsq.blog.dao.dos.Archives;
 import com.dsq.blog.dao.mapper.ArticleBodyMapper;
@@ -42,42 +43,49 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public Result listArticle(PageParams pageParams) {
-        /**
-         * 1、分页查询article数据库表
-         */
-        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-        if (pageParams.getCategoryId() != null) {
-            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
-        }
-        List<Long> articleIdList = new ArrayList<>();
-        if (pageParams.getTagId() != null) {
-            //加入标签条件查询
-            //article表中并没有tag字段 一篇文章有多个标签
-            //articie_tog article_id 1：n tag_id
-            //我们需要利用一个全新的属于文章标签的queryWrapper将这篇文章的article_Tag查出来，保存到一个list当中。
-            // 然后再根据queryWrapper的in方法选择我们需要的标签即可。
-            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
-            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
-            for (ArticleTag articleTag : articleTags) {
-                articleIdList.add(articleTag.getArticleId());
-            }
-            if (articleTags.size() > 0) {
-                // and id in(1,2,3)
-                queryWrapper.in(Article::getId, articleIdList);
-            }
-        }
-        //是否置顶、按时间排序
-        //时间倒序进行排列相当于order by create_date desc
-        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
-        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
-        //分页查询用法 https://blog.csdn.net/weixin_41010294/article/details/105726879
-        List<Article> records = articlePage.getRecords();
-        // 要返回我们定义的vo数据，就是对应的前端数据，不应该只返回现在的数据需要进一步进行处理
-        List<ArticleVo> articleVoList = copyList(records, true, true);
-        return Result.success(articleVoList);
+        Page<Article> page = new Page<>(pageParams.getPage(),pageParams.getPageSize());
+        IPage<Article> articleIPage = this.articleMapper.listArticle(page,pageParams.getCategoryId(),pageParams.getTagId(),pageParams.getYear(),pageParams.getMonth());
+        return Result.success(copyList(articleIPage.getRecords(),true,true));
     }
+
+//    @Override
+//    public Result listArticle(PageParams pageParams) {
+//        /**
+//         * 1、分页查询article数据库表
+//         */
+//        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+//        if (pageParams.getCategoryId() != null) {
+//            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
+//        }
+//        List<Long> articleIdList = new ArrayList<>();
+//        if (pageParams.getTagId() != null) {
+//            //加入标签条件查询
+//            //article表中并没有tag字段 一篇文章有多个标签
+//            //articie_tog article_id 1：n tag_id
+//            //我们需要利用一个全新的属于文章标签的queryWrapper将这篇文章的article_Tag查出来，保存到一个list当中。
+//            // 然后再根据queryWrapper的in方法选择我们需要的标签即可。
+//            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+//            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+//            for (ArticleTag articleTag : articleTags) {
+//                articleIdList.add(articleTag.getArticleId());
+//            }
+//            if (articleTags.size() > 0) {
+//                // and id in(1,2,3)
+//                queryWrapper.in(Article::getId, articleIdList);
+//            }
+//        }
+//        //是否置顶、按时间排序
+//        //时间倒序进行排列相当于order by create_date desc
+//        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
+//        Page<Article> articlePage = articleMapper.selectPage(page, queryWrapper);
+//        //分页查询用法 https://blog.csdn.net/weixin_41010294/article/details/105726879
+//        List<Article> records = articlePage.getRecords();
+//        // 要返回我们定义的vo数据，就是对应的前端数据，不应该只返回现在的数据需要进一步进行处理
+//        List<ArticleVo> articleVoList = copyList(records, true, true);
+//        return Result.success(articleVoList);
+//    }
 
     @Override
     public Result hotArticle(int limit) {

@@ -74,8 +74,8 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Result findDetailById(Long id) {
-        return null;
+        Tag tag = tagMapper.selectById(id);
+        TagVo copy = copy(tag);
+        return Result.success(copy);
     }
-
-
 }
