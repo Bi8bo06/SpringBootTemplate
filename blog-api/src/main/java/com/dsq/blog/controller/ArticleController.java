@@ -1,6 +1,7 @@
 package com.dsq.blog.controller;
 
 import com.dsq.blog.common.aop.LogAnnotation;
+import com.dsq.blog.common.cache.Cache;
 import com.dsq.blog.service.ArticleService;
 import com.dsq.blog.vo.Result;
 import com.dsq.blog.vo.params.ArticleParam;
@@ -34,6 +35,7 @@ public class ArticleController {
      * @return
      */
     @PostMapping("hot")
+    @Cache(expire = 5 * 60 * 1000, name = "hot_article")
     public Result hotArticle() {
         int limit = 5;
         return articleService.hotArticle(limit);
