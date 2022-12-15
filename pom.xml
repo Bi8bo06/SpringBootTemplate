@@ -9,6 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <modules>
         <module>blog-api</module>
+        <module>blog-admin</module>
     </modules>
     <name>SpringBootTemplate</name>
     <description>Demo project for Spring Boot</description>
